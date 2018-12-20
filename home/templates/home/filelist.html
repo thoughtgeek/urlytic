@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title%}
+URLytic - FileList
+{% endblock %}
+
+{% block content %}
+<div class="topDiv appSummary">
+  <div class="d-flex justify-content-center">
+  Search
+  </div>
+  <div class="d-flex justify-content-center">
+  <input type="text" id="searchInput" onkeyup="search()" placeholder="Enter filename.." style="width:30%; margin-bottom: 1%; margin-top: 1%">
+  </div>
+  <table id="filetable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Uploaded at</th>
+        <th>Size</th>
+        <th>Uploaded by</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for document in documents %}
+        <tr>
+          <td><a href="{% url 'filedetail_ns:filedetail_home' %}?filename={{ document.upload.name }}" target="_blank">{{ document.upload.name }}</a></td>
+          <td>{{ document.uploaded_at }}</td>
+          <td>{{ document.upload.size|filesizeformat }}</td>
+          <td>{{ document.uploader.email }}</td>
+          <td>
+           <button class="delFile" value="{{ document.upload }}">Delete</button></td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="3">No data.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>  
+  {% endblock %}
+
+  {% block script%}
+  <script type="text/javascript">
+      window.onload =function (){
+      var buttons = document.getElementsByClassName("delFile");
+      for (var i = 0; i < buttons.length; i++) {
+          buttons[i].addEventListener("click", deleteFile);
+      }
+      function deleteFile(){
+          if (confirm("Are you sure you want to delete "+this.value+"?"))
+            {
+            var url  = "{% url 'home_ns:filelist' %}";
+            var xhr  = new XMLHttpRequest();
+            var params = "delFile="+this.value
+            xhr.open('DELETE', url, false);
+            xhr.onload = function () {
+              window.location.reload();
+              }
+            xhr.send(params);
+            }
+          }
+      }
+
+      function search(){
+        var filter = document.getElementById("searchInput").value.toUpperCase();
+        var table = document.getElementById("filetable");
+        var tr = table.getElementsByTagName("tr");
+        console.log(filter);
+        for (i = 0; i < tr.length; i++) {
+          td = tr[i].getElementsByTagName("td")[0];
+          if (td) {
+            txtValue = td.textContent || td.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              tr[i].style.display = "";
+            } else {
+              tr[i].style.display = "none";
+            }
+          }
+        }
+      } 
+  </script>
+{% endblock %}

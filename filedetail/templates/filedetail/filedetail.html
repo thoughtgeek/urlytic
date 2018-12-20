@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title%}
+URLytic - FileDetail
+{% endblock %}
+
+{% block content %}
+<div class="topDiv appSummary">
+  <div class="d-flex justify-content-center">
+  {% for document in documents %}
+  <a href="{{ document.upload.url }}" target="_blank">{{ document.upload.name }}</a>
+  {% empty %}
+  No data
+  {% endfor %}
+  </div>
+</div>
+{% endblock %}  

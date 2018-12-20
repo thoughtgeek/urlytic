@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title%}
+URLytic - Home
+{% endblock %}
+
+{% block content %}
+<div class="centerDiv appSummary">
+  <div class="col">
+  <div class="container">
+    <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="d-flex justify-content-center">
+    <h2>Upload your file</h2>
+    </div>
+    <br>
+    <div class="list-group list-group-item list-group-item-action list-group-item-primary d-flex justify-content-center">
+    {{ form }}
+    </div>
+    <br>
+    <div class="d-flex justify-content-center">
+    <button class="btn btn-primary btn-lg" type="submit">Upload</button>
+    </div>
+    </form>
+  </div>
+  </div>
+  </div>
+{% endblock %}
+
+{% block script%}
+<div id="dialog" title="File Uploaded" style="display: none;">
+  <p>Your file has been uploaded successfully! Check filelist to see more options.</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript">
+  $( function() {
+    msg = Cookies.get('message');
+    if (msg)
+      $( "#dialog" ).dialog();
+    Cookies.remove('message')});    
+</script>
+{% endblock %}

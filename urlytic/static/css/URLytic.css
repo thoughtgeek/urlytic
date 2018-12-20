@@ -1,0 +1,47 @@
+
+.centerDiv{
+  width: 800px;
+  border-radius: 5px;
+  padding: 10px;
+  height: 100px;
+  position: absolute;
+  margin-top: -25px;
+  margin-left: -400px;
+  top: 50%;
+  left: 50%;
+}
+
+.topDiv{
+  width: 800px;
+  border-radius: 5px;
+  padding: 10px;
+  height: 100px;
+  position: absolute;
+  margin-top: -25px;
+  margin-left: -400px;
+  top: 10%;
+  left: 50%;	
+}
+
+.appSummary{
+    justify-content:center;
+}
+
+.back_upload{
+	background: #1E90FF;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+table td,
+table th {
+  border: 1px solid #eceeef;
+  padding: 5px 8px;
+  text-align: left;
+}
+table thead {
+  border-bottom: 2px solid #eceeef;
+}
+

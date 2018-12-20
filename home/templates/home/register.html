@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title%}
+<title>s3Metafora - Register new user</title>
+{% endblock %}
+
+{% block content %}
+    <form method="POST">
+        {% csrf_token %} {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base-blank.html' %}
+
+{% block title%}
+URLytic - Login
+{% endblock %}
+
+{% block content %}
+<style type="text/css">
+	input{
+  padding: 10px;
+  margin-left: 5px;
+  margin-right: 10px;
+}
+</style>
+<div class="centerDiv appSummary">    
+<div class="d-flex justify-content-center">
+<div class="list-group-item list-group-item-action list-group-item-light">
+<form method="post">
+  {% csrf_token %}
+<div class="d-flex justify-content-center textinput">  
+  {{ form.as_p }}
+</div>  
+<button class ="btn btn-primary btn-lg btn-block" type="submit">Login</button>
+</form>
+</div>
+</div>
+</div>
+{% endblock %}
