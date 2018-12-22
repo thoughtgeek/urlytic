@@ -89,3 +89,7 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 
 DEFAULT_FILE_STORAGE = 'urlytic.storage_backends.MediaStorage'
+
+
+#Define your specific setttings:
+DOMAIN_NAME = 'http://127.0.0.1:8000'

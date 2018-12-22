@@ -4,5 +4,7 @@ from . import views
 
 
 urlpatterns = [
-    url(r'^$', views.filedetail, name='filedetail_home'),
+    url(r'^details/$', views.filedetail, name='filedetail_home'),
+    url(r'^redirect/(?P<link>[a-zA-Z0-9]+)$', views.expand, name='shortlink'),
+
 ]

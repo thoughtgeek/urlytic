@@ -8,7 +8,8 @@ URLytic - FileDetail
 <div class="topDiv appSummary">
   <div class="d-flex justify-content-center">
   {% for document in documents %}
-  <a href="{{ document.upload.url }}" target="_blank">{{ document.upload.name }}</a>
+  <a href="{{ document.upload.url }}" target="_blank">{{ document.upload.name }}</a><br>
+  <a href="{{ generatedurl }}" target="_blank">{{ generatedurl }}</a><br>
   {% empty %}
   No data
   {% endfor %}
