@@ -5,7 +5,7 @@ URLytic - FileDetail
 {% endblock %}
 
 {% block content %}
-<div class="topDiv appSummary">
+<!-- <div class="topDiv appSummary">
   <div class="d-flex justify-content-center">
   {% for document in documents %}
   <a href="{{ document.upload.url }}" target="_blank">{{ document.upload.name }}</a><br>
@@ -14,5 +14,46 @@ URLytic - FileDetail
   No data
   {% endfor %}
   </div>
-</div>
+</div> -->
+<div class="topDiv appSummary">
+  <div class="d-flex justify-content-center">
+    <h2>Filename: <a href="{{ selectedfile.document.upload.url }}" target="_blank">{{ selectedfile.document.upload.name }}</a></h2>
+  </div>
+  <div class="d-flex justify-content-center">
+  Generate a new link:
+  <button class="linkgen" value="">Generate</button></td>
+  </div>
+  <div class="d-flex justify-content-center">
+   <table id="filetable">
+    <thead>
+      <tr>
+        <th>Generated Link</th>
+        <th>Enabled</th>
+        <th>Link lifespan</th>
+        <th>Link expiry</th>
+        <th>Max uses</th>
+        <th>Times link used</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for file in selectedfile.fileinfo %}
+        <tr>
+          <td><a href="{{ file.short_url }}" target="_blank">{{ file.short_url }}</a></td>
+          <td>{{ document.uploaded_at }}</td>
+          <td>{{ document.upload.size|filesizeformat }}</td>
+          <td>{{ document.uploader.email }}</td>
+          <td>
+           <button class="delFile" value="{{ document.upload }}">Delete</button></td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="3">No data.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    </table>
+   </div> 
+  </div> 
+
 {% endblock %}  

@@ -6,7 +6,6 @@ from home.models import Document
 
 
 class UrlMap(models.Model):
-    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     document = models.ForeignKey(Document, default=None, on_delete=models.CASCADE)
     full_url = models.CharField(max_length=256)
     short_url = models.CharField(max_length=50, unique=True, db_index=True)
@@ -20,7 +19,6 @@ class UrlMap(models.Model):
 
 
 class DocProfile(models.Model):
-    # user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     document = models.ForeignKey(Document, default=None, on_delete=models.CASCADE)
     enabled = models.BooleanField(default=True)
     max_urls = models.IntegerField(default=-1)

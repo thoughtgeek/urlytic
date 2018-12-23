@@ -6,7 +6,7 @@ s3mediauploader/__pycache__/
 
 # C extensions
 *.so
-
+.ss
 # Distribution / packaging
 .Python
 build/
