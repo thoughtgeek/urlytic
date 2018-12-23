@@ -23,7 +23,6 @@ def home(request):
                 documentform_unsaved  = form.save(commit=False)
                 documentform_unsaved.uploader = request.user
                 documentform_unsaved.save()
-                # return redirect('home:home')
                 response = render(request, 'home/home.html', {'form': form,})
                 response.set_cookie('message', "uploaded") 
                 return response

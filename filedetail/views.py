@@ -88,7 +88,8 @@ def fileinfo(document):
     domain = getattr(settings, 'DOMAIN_NAME', 'http://127.0.0.1:8000')
     for selectedfilemap in selectedfilemaps:
         selectedfilemap.short_url = domain + '/file/redirect/'+ selectedfilemap.short_url
-        print(selectedfilemap.short_url)
+        # print(selectedfilemap.short_url)
+        # print(selectedfilemap.enabled)
     return selectedfilemaps
 
 
@@ -129,7 +130,7 @@ class outputmap(object):
 #     for selectedfile in selectedfiles:
 #         selectedfilemaps = UrlMap.objects.filter(document=selectedfile)
 
-#     # test = filesettings(True, -1, -1, -1, -1)
+    
 
 #     # for document in documents:
 #     # 	uniqueurl = generate(document, test, document.upload.url)
@@ -144,10 +145,14 @@ class outputmap(object):
 
 def filedetail(request):
     filename = request.GET.get('filename')
-    o = outputmap(filename)
-    # print(str(o.document)+' '+str(o.short_url)+' '+str(o.full_url)+' '+str(o.lifespan)+' '+str(o.usage_count)+' '+str(o.date_expired))
+    gen_api_input = request.GET.get('gen')
+    filedetails = outputmap(filename)
 
+    if gen_api_input == 'True':
+        print('Generating new link..')
+        default_file_settings = filesettings(True, -1, -1, -1, -1)
+        uniqueurl = generate(filedetails.document, default_file_settings, filedetails.document.upload.url)
 
     return render(request, 'filedetail/filedetail.html',{
-                  'selectedfile':o,
+                  'selectedfile':filedetails,
         })

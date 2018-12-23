@@ -40,11 +40,12 @@ URLytic - FileDetail
       {% for file in selectedfile.fileinfo %}
         <tr>
           <td><a href="{{ file.short_url }}" target="_blank">{{ file.short_url }}</a></td>
-          <td>{{ document.uploaded_at }}</td>
-          <td>{{ document.upload.size|filesizeformat }}</td>
-          <td>{{ document.uploader.email }}</td>
-          <td>
-           <button class="delFile" value="{{ document.upload }}">Delete</button></td>
+          <td>{{ file.enabled }}</td>
+          <td>{{ file.lifespan }}</td>
+          <td>{{ file.date_expired }}</td>
+          <td>{{ file.max_uses }}</td>
+          <td>{{ file.usage_count }}</td>
+          <td><button class="updatelink" value="">Update</button></td></td>
         </tr>
       {% empty %}
         <tr>
@@ -57,3 +58,49 @@ URLytic - FileDetail
   </div> 
 
 {% endblock %}  
+
+{% block script%}
+<div id="dialog" title="Link Generated" style="display: none;">
+  <p>New download link has been generated!</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript">
+window.onload =function (){
+  var linkgen_button = document.getElementsByClassName("linkgen");
+  for (var i = 0; i < linkgen_button.length; i++) {
+    linkgen_button[i].addEventListener("click", call_api_generate);}
+
+  function call_api_generate(){
+      if (confirm("Are you sure you want to generate a new link?"))
+        {
+        url = "{% url 'filedetail_ns:filedetail_home' %}?filename={{ selectedfile.document.upload.name }}"
+        var xhr  = new XMLHttpRequest();
+        var params = "&gen=True"
+        xhr.open('GET', url+params, true);
+        xhr.onreadystatechange = function()
+          {
+            if(xhr.readyState == 4 && xhr.status == 200) {
+                $( "#dialog" ).dialog();
+                $( "#dialog" ).dialog({
+                  dialogClass: "no-close",
+                  buttons: [
+                    {
+                      text: "OK",
+                      click: function() {
+                        $( this ).dialog( "close" );
+                        window.location.reload();
+                      }
+                    }
+                  ]
+                });
+              }
+            }
+        xhr.send(null);
+        }
+       }
+      }  
+</script>
+{% endblock %}

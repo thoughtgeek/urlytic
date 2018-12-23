@@ -45,3 +45,6 @@ table thead {
   border-bottom: 2px solid #eceeef;
 }
 
+.no-close .ui-dialog-titlebar-close {
+  display: none;
+}
