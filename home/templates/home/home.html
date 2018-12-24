@@ -39,7 +39,17 @@ URLytic - Home
   $( function() {
     msg = Cookies.get('message');
     if (msg)
-      $( "#dialog" ).dialog();
+      $( "#dialog" ).dialog({
+        dialogClass: "no-close",
+        buttons: [
+          {
+            text: "OK",
+            click: function() {
+              $( this ).dialog( "close" );
+            }
+          }
+        ]
+      });
     Cookies.remove('message')});    
 </script>
 {% endblock %}
