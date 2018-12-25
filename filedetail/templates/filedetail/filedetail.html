@@ -5,16 +5,6 @@ URLytic - FileDetail
 {% endblock %}
 
 {% block content %}
-<!-- <div class="topDiv appSummary">
-  <div class="d-flex justify-content-center">
-  {% for document in documents %}
-  <a href="{{ document.upload.url }}" target="_blank">{{ document.upload.name }}</a><br>
-  <a href="{{ generatedurl }}" target="_blank">{{ generatedurl }}</a><br>
-  {% empty %}
-  No data
-  {% endfor %}
-  </div>
-</div> -->
 <div class="topDiv appSummary">
   <div class="d-flex justify-content-center">
     <h2>Filename: <a href="{{ selectedfile.document.upload.url }}" target="_blank">{{ selectedfile.document.upload.name }}</a></h2>
@@ -41,7 +31,7 @@ URLytic - FileDetail
       {% for file in selectedfile.fileinfo %}
         <tr>
           <td><a href="{{ file.short_url }}" target="_blank">{{ file.short_url }}</a></td>
-          <td><select class="fileinfo" id="enabled">
+          <td><select class="fileinfo" id="{{ file.short_url }}">
           {% if  file.enabled == "True" %}
           <option value="True" selected>True</option>
           <option value="False">False</option>
@@ -53,11 +43,11 @@ URLytic - FileDetail
           {% endif %}
           </td>
           <td>{{ file.date_created }}</td>
-          <td>{{ file.lifespan }} secs</td>
+          <td>{{ file.lifespan }}</td>
           <td>{{ file.date_expired }}</td>
           <td>{{ file.max_uses }}</td>
           <td>{{ file.usage_count }}</td>
-          <td><button class="updatelink" value="">Update</button></td></td>
+          <td><button class="updatelink" value="{{ file.short_url }}">Update</button></td></td>
         </tr>
       {% empty %}
         <tr>
@@ -75,6 +65,7 @@ URLytic - FileDetail
 <div id="dialog" title="Link Generated" style="display: none;">
   <p>New download link has been generated!</p>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
@@ -84,6 +75,42 @@ window.onload =function (){
   var linkgen_button = document.getElementsByClassName("linkgen");
   for (var i = 0; i < linkgen_button.length; i++) {
     linkgen_button[i].addEventListener("click", call_api_generate);}
+
+  var updatelink_button = document.getElementsByClassName("updatelink");
+  for (var i = 0; i < updatelink_button.length; i++) {
+    updatelink_button[i].addEventListener("click", call_api_updatelink);
+    updatelink_button[i].status_value = document.getElementById(updatelink_button[i].value);
+  }
+
+  function getSelectedOption(sel) {
+    var opt;
+    for ( var i = 0, len = sel.options.length; i < len; i++ ) {
+        opt = sel.options[i];
+        if ( opt.selected === true ) {
+            break;
+        }
+    }
+    return opt;
+}
+
+  function call_api_updatelink(evt){
+    var enabled = getSelectedOption(evt.target.status_value).value;
+    var link = evt.target.value;
+    var url = "{% url 'filedetail_ns:filedetail_home' %}";
+    var xhr  = new XMLHttpRequest();
+
+    var data = new FormData();
+    data.append('enabled', enabled);
+    data.append('link', link);
+    data.append('link', link);
+    data.append('file', "{{ selectedfile.document.upload.name }}");
+
+    xhr.open('POST', url, false);
+    xhr.onload = function () {
+      }
+    xhr.send(data);
+
+  }    
 
   function call_api_generate(){
       if (confirm("Are you sure you want to generate a new link?"))
@@ -112,6 +139,8 @@ window.onload =function (){
         xhr.send(null);
         }
        }
-      }  
+  }
 </script>
 {% endblock %}
+
+

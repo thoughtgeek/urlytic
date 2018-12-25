@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from django.conf import settings
 from django.db import IntegrityError
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from home.models import Document
 from .models import UrlMap, DocProfile
+from django.views.decorators.csrf import csrf_exempt
 import random
-
 
 #Random generator
 def get_random(tries=0):
@@ -101,7 +101,19 @@ class link_settings(object):
 
 
 #FileDetail View
+@csrf_exempt
 def filedetail(request):
+    if request.method == 'POST':
+        enabled = request.POST.get('enabled')
+        link = request.POST.get('link')
+        file = request.POST.get('file')
+        domain = getattr(settings, 'DOMAIN_NAME', 'http://127.0.0.1:8000')
+        str_len = len(domain +'/file/redirect/')
+        short = link[str_len:]
+        file_urlmap = UrlMap.objects.get(short_url__exact=short)
+        file_urlmap.enabled = enabled
+        file_urlmap.save()
+
     filename = request.GET.get('filename')
     gen_api_input = request.GET.get('gen')
     filedetails = renderinfo(filename)
