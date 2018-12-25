@@ -12,7 +12,7 @@ URLytic - FileList
   <div class="d-flex justify-content-center">
   <input type="text" id="searchInput" onkeyup="search()" placeholder="Enter filename.." style="width:30%; margin-bottom: 1%; margin-top: 1%">
   </div>
-  <table id="filetable">
+  <table id="filetable" class="table table-hover">
     <thead>
       <tr>
         <th>Name</th>
@@ -30,7 +30,7 @@ URLytic - FileList
           <td>{{ document.upload.size|filesizeformat }}</td>
           <td>{{ document.uploader.email }}</td>
           <td>
-           <button class="delFile" value="{{ document.upload }}">Delete</button></td>
+           <button class="delFile btn btn-primary btn-sm" value="{{ document.upload }}">Delete</button></td>
         </tr>
       {% empty %}
         <tr>

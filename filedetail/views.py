@@ -120,7 +120,7 @@ def filedetail(request):
 
     if gen_api_input == 'True':
         print('Generating new link..')
-        default_file_settings = link_settings('True', -1, 3)
+        default_file_settings = link_settings('True', -1, -1)
         uniqueurl = generate(filedetails.document, default_file_settings, filedetails.document.upload.url)
 
     return render(request, 'filedetail/filedetail.html',{

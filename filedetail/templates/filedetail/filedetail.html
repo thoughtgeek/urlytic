@@ -7,11 +7,11 @@ URLytic - FileDetail
 {% block content %}
 <div class="topDiv appSummary">
   <div class="d-flex justify-content-center">
-    <h2>Filename: <a href="{{ selectedfile.document.upload.url }}" target="_blank">{{ selectedfile.document.upload.name }}</a></h2>
+    <h2>File: <a href="{{ selectedfile.document.upload.url }}" target="_blank">{{ selectedfile.document.upload.name }}</a></h2>
   </div>
-  <div class="d-flex justify-content-center">
-  Generate a new link:
-  <button class="linkgen" value="">Generate</button></td>
+  <div class="d-flex justify-content-center" style="margin-top: 10px; margin-bottom: 10px;">
+  <button class="linkgen btn btn-primary btn-sm" value="" style="margin-right: 10px";>Generate default link</button>
+  <button class="customLink btn btn-primary btn-sm" value="">Generate custom link</button>
   </div>
   <div class="d-flex justify-content-center">
    <table id="filetable">
@@ -47,7 +47,7 @@ URLytic - FileDetail
           <td>{{ file.date_expired }}</td>
           <td>{{ file.max_uses }}</td>
           <td>{{ file.usage_count }}</td>
-          <td><button class="updatelink" value="{{ file.short_url }}">Update</button></td></td>
+          <td><button class="updatelink  btn btn-primary btn-sm" value="{{ file.short_url }}">Update</button></td></td>
         </tr>
       {% empty %}
         <tr>
@@ -62,8 +62,11 @@ URLytic - FileDetail
 {% endblock %}  
 
 {% block script%}
-<div id="dialog" title="Link Generated" style="display: none;">
+<div id="linkgen_dialog" title="Link Generated" style="display: none;">
   <p>New download link has been generated!</p>
+</div>
+<div id="statuschange_dialog" title="Link status changed" style="display: none;">
+  <p>Link status has  been changed successfully!</p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
@@ -102,18 +105,29 @@ window.onload =function (){
     var data = new FormData();
     data.append('enabled', enabled);
     data.append('link', link);
-    data.append('link', link);
     data.append('file', "{{ selectedfile.document.upload.name }}");
 
     xhr.open('POST', url, false);
     xhr.onload = function () {
+      $( "#statuschange_dialog" ).dialog({
+        dialogClass: "no-close",
+        buttons: [
+          {
+            text: "OK",
+            click: function() {
+              $( this ).dialog( "close" );
+              window.location.reload();
+            }
+          }
+        ]
+      });
       }
     xhr.send(data);
 
   }    
 
   function call_api_generate(){
-      if (confirm("Are you sure you want to generate a new link?"))
+      if (confirm("Are you sure you want to generate a new link with default settings?"))
         {
         url = "{% url 'filedetail_ns:filedetail_home' %}?filename={{ selectedfile.document.upload.name }}"
         var xhr  = new XMLHttpRequest();
@@ -122,7 +136,7 @@ window.onload =function (){
         xhr.onreadystatechange = function()
           {
             if(xhr.readyState == 4 && xhr.status == 200) {
-                $( "#dialog" ).dialog({
+                $( "#linkgen_dialog" ).dialog({
                   dialogClass: "no-close",
                   buttons: [
                     {
