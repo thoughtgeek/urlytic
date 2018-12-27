@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from home.models import Document
 from django.views.decorators.csrf import csrf_exempt
-from .models import UrlMap, DocProfile
+from .models import UrlMap
 from .forms import CustomLinkForm
 from django.urls import reverse
 

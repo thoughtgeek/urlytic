@@ -18,11 +18,3 @@ class UrlMap(models.Model):
     def __str__(self):
         return self.full_url
 
-
-class DocProfile(models.Model):
-    document = models.ForeignKey(Document, default=None, on_delete=models.CASCADE)
-    enabled = models.BooleanField(default=True)
-    max_urls = models.IntegerField(default=-1)
-    max_concurrent_urls = models.IntegerField(default=100)
-    default_lifespan = models.IntegerField(default=120)
-    default_max_uses = models.IntegerField(default=-1)
