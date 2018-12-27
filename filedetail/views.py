@@ -38,7 +38,7 @@ def generate(document, filesettings, link, expiry_date=None):
             expiry_date = datetime.strptime(expiry_date, '%Y-%m-%d %H:%M:%S')
             expiry_date = pytz.utc.localize(expiry_date)
             lifespan = expiry_date - timezone.now()
-            lifespan = int(lifespan.seconds)
+            lifespan = int(lifespan.total_seconds())
         #Try up to three times to generate a random number without duplicates.
         #Each time increase the number of allowed characters
         for tries in range(3):
@@ -154,6 +154,9 @@ def customlink(request):
     else:
         form = CustomLinkForm()
 
-    return render(request, 'filedetail/customlink.html',{'form':form})        
+    return render(request, 'filedetail/customlink.html',{
+                  'form':form,
+                  'doc_name':request.session['current_doc_name'],
+                  })        
 
 
