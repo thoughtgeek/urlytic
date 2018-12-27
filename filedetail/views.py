@@ -142,14 +142,15 @@ def customlink(request):
     if request.method == 'POST':
         form = CustomLinkForm(request.POST)
         documents = Document.objects.filter(upload=request.session['current_doc_name'])
-        expires_on = form.data.get('expires_on')+':00'
-        max_uses = form.data.get('max_uses')
-        lifespan = form.data.get('lifespan')
-        custom_settings = LinkSettings('True', lifespan, max_uses)
-        for document in documents:
-            generated_url = generate(document, custom_settings, document.upload.url, expiry_date=expires_on)
-            doc_name = document.upload.name
-        return HttpResponseRedirect(reverse('filedetail_ns:filedetail_home')+'?filename='+doc_name)
+        if form.is_valid():
+            expires_on = form.data.get('expires_on')+':00'
+            max_uses = form.data.get('max_uses')
+            lifespan = form.data.get('lifespan')
+            custom_settings = LinkSettings('True', lifespan, max_uses)
+            for document in documents:
+                generated_url = generate(document, custom_settings, document.upload.url, expiry_date=expires_on)
+                doc_name = document.upload.name
+            return HttpResponseRedirect(reverse('filedetail_ns:filedetail_home')+'?filename='+doc_name)
     else:
         form = CustomLinkForm()
 

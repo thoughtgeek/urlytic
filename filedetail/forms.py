@@ -9,4 +9,10 @@ class CustomLinkForm(forms.Form):
 	max_uses = forms.CharField(max_length=5)
 	lifespan = forms.CharField(max_length=5, label='Lifespan in secs(optional)', required=False)
 
+	def clean(self):
+		expires_on = self.cleaned_data['expires_on']
+		if expires_on < timezone.now():
+			raise forms.ValidationError("The date/time cannot be in the past!")
+		return expires_on	
+
 
