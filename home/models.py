@@ -16,3 +16,5 @@ class Document(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     upload = models.FileField(upload_to=randomizer, null=True)
     uploader = models.ForeignKey(User, db_column="user")
+    def __str__(self):
+        return self.upload.name

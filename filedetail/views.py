@@ -1,3 +1,5 @@
+import pytz
+import random
 from django.shortcuts import render
 from django.conf import settings
 from django.db import IntegrityError
@@ -5,9 +7,10 @@ from datetime import timedelta, datetime
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from home.models import Document
-from .models import UrlMap, DocProfile
 from django.views.decorators.csrf import csrf_exempt
-import random
+from .models import UrlMap, DocProfile
+from .forms import CustomLinkForm
+from django.urls import reverse
 
 #Random generator
 def get_random(tries=0):
@@ -19,18 +22,23 @@ def get_random(tries=0):
 
 
 #New link generator
-def generate(document, filesettings, link):
+def generate(document, filesettings, link, expiry_date=None):
         # store settings variables
         linkenabled = filesettings.enabled
-        lifespan = filesettings.lifespan
         max_uses = filesettings.max_uses
+        lifespan = filesettings.lifespan
       
         #Expiry date, -1 to disable
-        if lifespan != -1:
-            expiry_date = timezone.now() + timedelta(seconds=lifespan)
+        if lifespan != '':
+            if lifespan != -1:
+                expiry_date = timezone.now() + timedelta(seconds=int(lifespan))
+            else:
+                expiry_date = timezone.make_aware(timezone.datetime.max, timezone.get_default_timezone())
         else:
-            expiry_date = timezone.make_aware(timezone.datetime.max, timezone.get_default_timezone())
-
+            expiry_date = datetime.strptime(expiry_date, '%Y-%m-%d %H:%M:%S')
+            expiry_date = pytz.utc.localize(expiry_date)
+            lifespan = expiry_date - timezone.now()
+            lifespan = int(lifespan.seconds)
         #Try up to three times to generate a random number without duplicates.
         #Each time increase the number of allowed characters
         for tries in range(3):
@@ -82,8 +90,8 @@ def fileinfo(document):
     return selectedfilemaps
 
 
-#Generate output map
-class renderinfo(object):
+#Template render class
+class RenderInfo(object):
     def __init__(self, filename):
         selectedfiles = Document.objects.filter(upload=filename)
         for selectedfile in selectedfiles:
@@ -93,7 +101,7 @@ class renderinfo(object):
 
 
 #FileSettings class
-class link_settings(object):
+class LinkSettings(object):
     def __init__(self, enabled, lifespan, max_uses):
         self.enabled = enabled
         self.lifespan = lifespan
@@ -116,13 +124,35 @@ def filedetail(request):
 
     filename = request.GET.get('filename')
     gen_api_input = request.GET.get('gen')
-    filedetails = renderinfo(filename)
+    filedetails = RenderInfo(filename)
 
     if gen_api_input == 'True':
         print('Generating new link..')
-        default_file_settings = link_settings('True', -1, -1)
+        default_file_settings = LinkSettings('True', -1, -1)
         uniqueurl = generate(filedetails.document, default_file_settings, filedetails.document.upload.url)
 
+    request.session['current_doc_name'] = filedetails.document.upload.name  
     return render(request, 'filedetail/filedetail.html',{
                   'selectedfile':filedetails,
         })
+
+
+#CustomLink View
+def customlink(request):
+    if request.method == 'POST':
+        form = CustomLinkForm(request.POST)
+        documents = Document.objects.filter(upload=request.session['current_doc_name'])
+        expires_on = form.data.get('expires_on')+':00'
+        max_uses = form.data.get('max_uses')
+        lifespan = form.data.get('lifespan')
+        custom_settings = LinkSettings('True', lifespan, max_uses)
+        for document in documents:
+            generated_url = generate(document, custom_settings, document.upload.url, expiry_date=expires_on)
+            doc_name = document.upload.name
+        return HttpResponseRedirect(reverse('filedetail_ns:filedetail_home')+'?filename='+doc_name)
+    else:
+        form = CustomLinkForm()
+
+    return render(request, 'filedetail/customlink.html',{'form':form})        
+
+
