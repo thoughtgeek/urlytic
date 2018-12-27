@@ -12,3 +12,8 @@ Migrate using
 ```
 python manage.py migrate --run-syncdb
 ```
+Create the user
+
+```
+python manage.py createsuperuser
+```
