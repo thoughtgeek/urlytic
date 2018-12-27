@@ -13,6 +13,8 @@ class CustomLinkForm(forms.Form):
 		expires_on = self.cleaned_data['expires_on']
 		if expires_on < timezone.now():
 			raise forms.ValidationError("The date/time cannot be in the past!")
-		return expires_on	
+			if expires_on.time < timezone.now().time:
+				raise forms.ValidationError("The date/time cannot be in the past!")
+		return expires_on
 
 
