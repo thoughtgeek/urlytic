@@ -1,4 +1,6 @@
 ## Urlytic
+A file uploader with feature to generate multiple urls and set the number of times it can be used and the expirydate/lifespan of the link.
+
 
 Add a file '.env' in the root with the following information
 ```
