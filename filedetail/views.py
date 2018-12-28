@@ -1,5 +1,6 @@
 import pytz
 import random
+import requests
 from django.shortcuts import render
 from django.conf import settings
 from django.db import IntegrityError
@@ -22,7 +23,7 @@ def get_random(tries=0):
 
 
 #New link generator
-def generate(document, filesettings, link, expiry_date=None):
+def generate(document, filesettings, link, expiry_date=None, webhook=None):
         # store settings variables
         linkenabled = filesettings.enabled
         max_uses = filesettings.max_uses
@@ -44,7 +45,7 @@ def generate(document, filesettings, link, expiry_date=None):
         for tries in range(3):
             try:
                 short = get_random(tries)
-                m = UrlMap(document=document, full_url=link, short_url=short, max_count=max_uses, date_expired=expiry_date, enabled=linkenabled, lifespan=lifespan)
+                m = UrlMap(document=document, full_url=link, short_url=short, max_count=max_uses, date_expired=expiry_date, enabled=linkenabled, lifespan=lifespan, webhook=webhook)
                 m.save()
                 return m.short_url
             except IntegrityError:
@@ -66,11 +67,22 @@ def expand(request, link):
     if url.max_count != -1:
         if url.max_count <= url.usage_count:
             raise PermissionError("max usages for link reached")
-    # ensure we are within allowed datetime
-    if timezone.now() > url.date_expired:
-        raise PermissionError("shortlink expired")
-
+    # ensure we are within allowed datetime if lifespan not -1
+    if url.lifespan != -1:
+        if timezone.now() > url.date_expired:
+            raise PermissionError("shortlink expired")
+    
     url.usage_count += 1
+
+    data = {
+            'document':url.document.upload.name,
+            'shortlink':url.short_url,
+            'usage_count':url.usage_count,
+            'max_count':url.max_count,
+    }
+    response = requests.post(url.webhook, json=data)
+    print('Webhook triggered. Returned status code:'+str(response.status_code))
+
     url.save()
     return HttpResponseRedirect(url.full_url)
 
@@ -146,9 +158,15 @@ def customlink(request):
             expires_on = form.data.get('expires_on')+':00'
             max_uses = form.data.get('max_uses')
             lifespan = form.data.get('lifespan')
+            webhook = form.data.get('webhook')
+
             custom_settings = LinkSettings('True', lifespan, max_uses)
             for document in documents:
-                generated_url = generate(document, custom_settings, document.upload.url, expiry_date=expires_on)
+                if webhook == '':
+                    generated_url = generate(document, custom_settings, document.upload.url, expiry_date=expires_on)
+                else:
+                    generated_url = generate(document, custom_settings, document.upload.url, expiry_date=expires_on, webhook=webhook)
+                        
                 doc_name = document.upload.name
             return HttpResponseRedirect(reverse('filedetail_ns:filedetail_home')+'?filename='+doc_name)
     else:

@@ -24,6 +24,7 @@ URLytic - FileDetail
         <th>Link expires</th>
         <th>Max uses</th>
         <th>Times link used</th>
+        <th>Webhook Endpoint</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -47,6 +48,7 @@ URLytic - FileDetail
           <td>{{ file.date_expired }}</td>
           <td>{{ file.max_uses }}</td>
           <td>{{ file.usage_count }}</td>
+          <td>{{ file.webhook }}</td>
           <td><button class="updatelink  btn btn-primary btn-sm" value="{{ file.short_url }}">Update</button></td></td>
         </tr>
       {% empty %}

@@ -15,6 +15,8 @@ class UrlMap(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_expired = models.DateTimeField()
     enabled = models.CharField(max_length=5)
+    webhook = models.URLField(max_length=255, default=None, null=True, blank=True)
+
     def __str__(self):
         return self.full_url
 
