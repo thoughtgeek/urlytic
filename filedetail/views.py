@@ -80,9 +80,11 @@ def expand(request, link):
             'usage_count':url.usage_count,
             'max_count':url.max_count,
     }
-    response = requests.post(url.webhook, json=data)
-    print('Webhook triggered. Returned status code:'+str(response.status_code))
 
+    if url.webhook is not None:
+        response = requests.post(url.webhook, json=data)
+        print('Webhook triggered. Returned status code:'+str(response.status_code))
+    
     url.save()
     return HttpResponseRedirect(url.full_url)
 
