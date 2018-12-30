@@ -59,18 +59,26 @@ def expand(request, link):
     try:
         url = UrlMap.objects.get(short_url__exact=link)
     except UrlMap.DoesNotExist:
-        raise KeyError("invalid shortlink")
+        return render(request, 'filedetail/access_error.html',{
+                      'error':"Invalid shortlink",
+            })
     #Ensure enabled
     if url.enabled == 'False':
-        raise PermissionError("shortlink disabled")
+        return render(request, 'filedetail/access_error.html',{
+                      'error':"Shortlink disabled",
+            })
     # ensure we are within usage counts
     if url.max_count != -1:
         if url.max_count <= url.usage_count:
-            raise PermissionError("max usages for link reached")
+            return render(request, 'filedetail/access_error.html',{
+                          'error':"Max usages for link reached",
+                })
     # ensure we are within allowed datetime if lifespan not -1
     if url.lifespan != -1:
         if timezone.now() > url.date_expired:
-            raise PermissionError("shortlink expired")
+            return render(request, 'filedetail/access_error.html',{
+                          'error':"Shortlink expired",
+                })
     
     url.usage_count += 1
 
