@@ -1,60 +1,26 @@
-import pytz
 import random
+import pytz
+from datetime import timedelta, datetime
 import requests
 from django.shortcuts import render
 from django.conf import settings
 from django.db import IntegrityError
-from datetime import timedelta, datetime
 from django.utils import timezone
-from django.http import HttpResponse, HttpResponseRedirect
-from home.models import Document
+from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
-from .models import UrlMap
+from django.core.files.storage import default_storage
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, HttpResponseRedirect, QueryDict
+from .forms import DocumentForm, UserRegistrationForm
+from .models import Document, UrlMap
 from .forms import CustomLinkForm
 from django.urls import reverse
-
-#Random generator
-def get_random(tries=0):
-    length = getattr(settings, 'SHORTENER_LENGTH', 5)
-    length += tries
-    # Removed l, I, 1
-    dictionary = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz234567890"
-    return ''.join(random.choice(dictionary) for _ in range(length))
+from .utilities import *
 
 
-#New link generator
-def generate(document, filesettings, link, expiry_date=None, webhook=None):
-        # store settings variables
-        linkenabled = filesettings.enabled
-        max_uses = filesettings.max_uses
-        lifespan = filesettings.lifespan
-      
-        #Expiry date, -1 to disable
-        if lifespan != '':
-            if lifespan != -1:
-                expiry_date = timezone.now() + timedelta(seconds=int(lifespan))
-            else:
-                expiry_date = timezone.make_aware(timezone.datetime.max, timezone.get_default_timezone())
-        else:
-            expiry_date = datetime.strptime(expiry_date, '%Y-%m-%d %H:%M:%S')
-            expiry_date = pytz.utc.localize(expiry_date)
-            lifespan = expiry_date - timezone.now()
-            lifespan = int(lifespan.total_seconds())
-        #Try up to three times to generate a random number without duplicates.
-        #Each time increase the number of allowed characters
-        for tries in range(3):
-            try:
-                short = get_random(tries)
-                m = UrlMap(document=document, full_url=link, short_url=short, max_count=max_uses, date_expired=expiry_date, enabled=linkenabled, lifespan=lifespan, webhook=webhook)
-                m.save()
-                return m.short_url
-            except IntegrityError:
-                continue
-        raise KeyError("Could not generate unique shortlink")
-
-
-
-#Link expander
+#Link expander view
 def expand(request, link):
     try:
         url = UrlMap.objects.get(short_url__exact=link)
@@ -97,40 +63,8 @@ def expand(request, link):
     return HttpResponseRedirect(url.full_url)
 
 
-#FileInfo query function
-def fileinfo(document):
-    selectedfilemaps = UrlMap.objects.filter(document=document)
-    domain = getattr(settings, 'DOMAIN_NAME', 'http://127.0.0.1:8000')
-    for selectedfilemap in selectedfilemaps:
-        selectedfilemap.short_url = domain + '/file/redirect/'+ selectedfilemap.short_url
-        selectedfilemap.max_uses = selectedfilemap.max_count
-        if selectedfilemap.lifespan == -1:
-            selectedfilemap.date_expired = 'Never'
-            selectedfilemap.lifespan = 'Infinite'
-        if selectedfilemap.max_uses == -1:
-            selectedfilemap.max_uses = 'Unlimited'    
-    return selectedfilemaps
-
-
-#Template render class
-class RenderInfo(object):
-    def __init__(self, filename):
-        selectedfiles = Document.objects.filter(upload=filename)
-        for selectedfile in selectedfiles:
-            self.document = selectedfile
-            self.fileinfo = fileinfo(selectedfile)
-
-
-
-#FileSettings class
-class LinkSettings(object):
-    def __init__(self, enabled, lifespan, max_uses):
-        self.enabled = enabled
-        self.lifespan = lifespan
-        self.max_uses = max_uses
-
-
 #FileDetail View
+@login_required
 @csrf_exempt
 def filedetail(request):
     if request.method == 'POST':
@@ -160,6 +94,7 @@ def filedetail(request):
 
 
 #CustomLink View
+@login_required
 def customlink(request):
     if request.method == 'POST':
         form = CustomLinkForm(request.POST)
@@ -178,7 +113,7 @@ def customlink(request):
                     generated_url = generate(document, custom_settings, document.upload.url, expiry_date=expires_on, webhook=webhook)
                         
                 doc_name = document.upload.name
-            return HttpResponseRedirect(reverse('filedetail_ns:filedetail_home')+'?filename='+doc_name)
+            return HttpResponseRedirect(reverse('filedetail_home')+'?filename='+doc_name)
     else:
         form = CustomLinkForm()
 
@@ -187,4 +122,73 @@ def customlink(request):
                   'doc_name':request.session['current_doc_name'],
                   })        
 
+#Homepage view
+def home(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('/accounts/login')
 
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            form = DocumentForm(request.POST, request.FILES)
+            if form.is_valid():
+                documentform_unsaved  = form.save(commit=False)
+                documentform_unsaved.uploader = request.user
+                documentform_unsaved.save()
+                response = render(request, 'home/home.html', {'form': form,})
+                response.set_cookie('message', "uploaded") 
+                return response
+        else:
+            form = DocumentForm()
+
+        return render(request, 'home/home.html', {
+            'form': form,
+        })
+
+#Filelist view
+@login_required
+@csrf_exempt
+def filelist(request):
+    documents = Document.objects.all()
+    if request.method == 'DELETE':
+        delFile = str(QueryDict(request.body).get('delFile'))
+        try:
+            delFile = str(QueryDict(request.body).get('delFile'))
+            Document.objects.filter(upload=delFile).delete()
+            default_storage.delete(delFile)
+            print('File deleted successfully!')
+        except:
+            print('Error in file deletion!')
+    return render(request, 'home/filelist.html', {
+        'documents':documents,
+        'user_email':request.user.email,
+    })
+
+#Registration view
+@login_required
+def register(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            userObj = form.cleaned_data
+            email =  userObj['email']
+            auth_token = token_generator()
+            while User.objects.filter(username=auth_token).exists():
+                auth_token = token_generator()
+            if not User.objects.filter(email=email).exists():
+                User.objects.create_user(auth_token, email, auth_token)
+                return render(request, 'home/register_success.html',
+                              {'auth_token' : auth_token})
+            else:
+                raise forms.ValidationError('Looks like a user with that email already exists')
+    else:
+        form = UserRegistrationForm()
+    return render(request, 'home/register.html', {
+        'form' : form,
+        'user_email':request.user.email,
+    })
+
+#LogOut view
+@login_required
+def log_out(request):
+    logout(request)
+    return render(request, 'registration/logout.html')

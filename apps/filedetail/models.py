@@ -2,7 +2,7 @@ from django.db import models
 from django.db import models
 from django.conf import settings
 from datetime import datetime, timedelta
-from home.models import Document
+from apps.home.models import Document
 
 
 class UrlMap(models.Model):

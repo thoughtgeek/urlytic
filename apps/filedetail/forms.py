@@ -1,6 +1,6 @@
 from django import forms
 from .models import UrlMap
-from home.models import Document
+from apps.home.models import Document
 from django.utils import timezone
 import datetime
 

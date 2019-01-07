@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title%}
+URLytic - FileDetail
+{% endblock %}
+
+{% block content %}
+<div class="topDiv appSummary">
+  <div class="d-flex justify-content-center">
+    <h2>File: <a href="{{ selectedfile.document.upload.url }}" target="_blank">{{ selectedfile.document.upload.name }}</a></h2>
+  </div>
+  <div class="d-flex justify-content-center" style="margin-top: 10px; margin-bottom: 10px;">
+  <button class="linkgen btn btn-primary btn-sm" value="" style="margin-right: 10px;">Generate default link</button>
+  <button class="customLink btn btn-primary btn-sm" onclick="location.href='/customlink';">Generate custom link</button>
+  </div>
+  <div class="d-flex justify-content-center">
+   <table id="filetable">
+    <thead>
+      <tr>
+        <th>Generated Link</th>
+        <th>Enabled</th>
+        <th>Link created</th>
+        <th>Link lifespan</th>
+        <th>Link expires</th>
+        <th>Max uses</th>
+        <th>Times link used</th>
+        <th>Webhook Endpoint</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for file in selectedfile.fileinfo %}
+        <tr>
+          <td><a href="{{ file.short_url }}" target="_blank">{{ file.short_url }}</a></td>
+          <td><select class="fileinfo" id="{{ file.short_url }}">
+          {% if  file.enabled == "True" %}
+          <option value="True" selected>True</option>
+          <option value="False">False</option>
+          </select>
+          {% else %}
+          <option value="True">True</option>
+          <option value="False" selected>False</option>
+          </select>
+          {% endif %}
+          </td>
+          <td>{{ file.date_created }}</td>
+          <td>{{ file.lifespan }} secs</td>
+          <td>{{ file.date_expired }}</td>
+          <td>{{ file.max_uses }}</td>
+          <td>{{ file.usage_count }}</td>
+          <td>{{ file.webhook }}</td>
+          <td><button class="updatelink  btn btn-primary btn-sm" value="{{ file.short_url }}">Update</button></td></td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="3">No data.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    </table>
+   </div> 
+  </div> 
+
+{% endblock %}  
+
+{% block script%}
+<div id="linkgen_dialog" title="Link Generated" style="display: none;">
+  <p>New download link has been generated!</p>
+</div>
+<div id="statuschange_dialog" title="Link status changed" style="display: none;">
+  <p>Link status has  been changed successfully!</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript">
+window.onload =function (){
+  var linkgen_button = document.getElementsByClassName("linkgen");
+  for (var i = 0; i < linkgen_button.length; i++) {
+    linkgen_button[i].addEventListener("click", call_api_generate);}
+
+  var updatelink_button = document.getElementsByClassName("updatelink");
+  for (var i = 0; i < updatelink_button.length; i++) {
+    updatelink_button[i].addEventListener("click", call_api_updatelink);
+    updatelink_button[i].status_value = document.getElementById(updatelink_button[i].value);
+  }
+
+  function getSelectedOption(sel) {
+    var opt;
+    for ( var i = 0, len = sel.options.length; i < len; i++ ) {
+        opt = sel.options[i];
+        if ( opt.selected === true ) {
+            break;
+        }
+    }
+    return opt;
+}
+
+  function call_api_updatelink(evt){
+    var enabled = getSelectedOption(evt.target.status_value).value;
+    var link = evt.target.value;
+    var url = "{% url 'filedetail_home' %}";
+    var xhr  = new XMLHttpRequest();
+
+    var data = new FormData();
+    data.append('enabled', enabled);
+    data.append('link', link);
+    data.append('file', "{{ selectedfile.document.upload.name }}");
+
+    xhr.open('POST', url, false);
+    xhr.onload = function () {
+      $( "#statuschange_dialog" ).dialog({
+        dialogClass: "no-close",
+        buttons: [
+          {
+            text: "OK",
+            click: function() {
+              $( this ).dialog( "close" );
+              window.location.reload();
+            }
+          }
+        ]
+      });
+      }
+    xhr.send(data);
+
+  }    
+
+  function call_api_generate(){
+      if (confirm("Are you sure you want to generate a new link with default settings?"))
+        {
+        url = "{% url 'filedetail_home' %}?filename={{ selectedfile.document.upload.name }}"
+        var xhr  = new XMLHttpRequest();
+        var params = "&gen=True"
+        xhr.open('GET', url+params, true);
+        xhr.onreadystatechange = function()
+          {
+            if(xhr.readyState == 4 && xhr.status == 200) {
+                $( "#linkgen_dialog" ).dialog({
+                  dialogClass: "no-close",
+                  buttons: [
+                    {
+                      text: "OK",
+                      click: function() {
+                        $( this ).dialog( "close" );
+                        window.location.reload();
+                      }
+                    }
+                  ]
+                });
+              }
+            }
+        xhr.send(null);
+        }
+       }
+  }
+</script>
+{% endblock %}
+
+
