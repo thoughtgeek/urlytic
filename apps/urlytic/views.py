@@ -1,11 +1,8 @@
-import random
-import pytz
-from datetime import timedelta, datetime
 import requests
-from django.shortcuts import render
+from datetime import datetime
 from django.conf import settings
-from django.db import IntegrityError
 from django.utils import timezone
+from django.db import IntegrityError
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
