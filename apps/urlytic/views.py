@@ -68,23 +68,25 @@ def filedetail(request):
         enabled = request.POST.get('enabled')
         link = request.POST.get('link')
         file = request.POST.get('file')
-        print('enabled:'+enabled)
         domain = getattr(settings, 'DOMAIN_NAME', 'http://127.0.0.1:8000')
         str_len = len(domain +'/redirect/')
         short = link[str_len:]
         file_urlmap = UrlMap.objects.get(short_url__exact=short)
         file_urlmap.enabled = enabled
         file_urlmap.save()
+        print('Changing enabled status to '+enabled+' for '+file)
+        filedetails = RenderInfo(file)
 
-    filename = request.GET.get('filename')
-    gen_api_input = request.GET.get('gen')
-    filedetails = RenderInfo(filename)
-
-    if gen_api_input == 'True':
-        print('Generating new link..')
-        default_file_settings = LinkSettings('True', -1, -1)
-        uniqueurl = generate(filedetails.document, default_file_settings, filedetails.document.upload.url)
-
+    if request.method == 'GET':
+        filename = request.GET.get('filename')
+        gen_api_input = request.GET.get('gen')
+        filedetails = RenderInfo(filename)
+        if gen_api_input == 'True':
+            default_file_settings = LinkSettings('True', -1, -1)
+            uniqueurl = generate(filedetails.document, default_file_settings, filedetails.document.upload.url)
+            print('Generating new link:'+uniqueurl+' for '+filename)
+   
+    # filedetails = RenderInfo(filename)
     request.session['current_doc_name'] = filedetails.document.upload.name  
     return render(request, 'filedetail/filedetail.html',{
                   'selectedfile':filedetails,
