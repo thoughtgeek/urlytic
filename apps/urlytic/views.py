@@ -86,7 +86,6 @@ def filedetail(request):
             uniqueurl = generate(filedetails.document, default_file_settings, filedetails.document.upload.url)
             print('Generating new link:'+uniqueurl+' for '+filename)
    
-    # filedetails = RenderInfo(filename)
     request.session['current_doc_name'] = filedetails.document.upload.name  
     return render(request, 'filedetail/filedetail.html',{
                   'selectedfile':filedetails,
