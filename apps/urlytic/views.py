@@ -68,8 +68,9 @@ def filedetail(request):
         enabled = request.POST.get('enabled')
         link = request.POST.get('link')
         file = request.POST.get('file')
+        print('enabled:'+enabled)
         domain = getattr(settings, 'DOMAIN_NAME', 'http://127.0.0.1:8000')
-        str_len = len(domain +'/file/redirect/')
+        str_len = len(domain +'/redirect/')
         short = link[str_len:]
         file_urlmap = UrlMap.objects.get(short_url__exact=short)
         file_urlmap.enabled = enabled
