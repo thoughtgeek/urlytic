@@ -1,12 +1,16 @@
-{% extends 'base.html' %}
+{% extends base %}
 
 {% block title%}
-<title>s3Metafora - Register new user</title>
+Urlytic - Register new user
 {% endblock %}
 
 {% block content %}
+<div class="topDiv appSummary">
+  <div class="d-flex justify-content-center">
     <form method="POST">
         {% csrf_token %} {{ form.as_p }}
         <button type="submit">Submit</button>
     </form>
+   </div>
+</div>    
 {% endblock %}

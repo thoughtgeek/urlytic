@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends base %}
 
 {% block title%}
 URLytic - Home
@@ -8,6 +8,7 @@ URLytic - Home
 <div class="centerDiv appSummary">
   <div class="col">
   <div class="container">
+  {% if user.is_authenticated %}
     <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="d-flex justify-content-center">
@@ -22,10 +23,27 @@ URLytic - Home
     <button class="btn btn-primary btn-lg" type="submit">Upload</button>
     </div>
     </form>
+  {% else %}
+    <form method="get" action="/accounts/login">
+    {% csrf_token %}
+    <div class="d-flex justify-content-center">
+    <h2>Upload your file</h2>
+    </div>
+    <br>
+    <div class="list-group list-group-item list-group-item-action list-group-item-primary d-flex justify-content-center">
+    {{ form }}
+    </div>
+    <br>
+    <div class="d-flex justify-content-center">
+    <button class="btn btn-primary btn-lg" type="submit">Upload</button>
+    </div>
+    </form>
+  {% endif %}  
   </div>
   </div>
   </div>
 {% endblock %}
+
 
 {% block script%}
 <div id="dialog" title="File Uploaded" style="display: none;">
@@ -53,3 +71,4 @@ URLytic - Home
     Cookies.remove('message')});    
 </script>
 {% endblock %}
+

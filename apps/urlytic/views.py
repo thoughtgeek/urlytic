@@ -10,12 +10,32 @@ from django.core.files.storage import default_storage
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, QueryDict
-from .forms import DocumentForm, UserRegistrationForm
+from .forms import DocumentForm, CustomLinkForm,  UserRegistrationForm
 from .models import Document, UrlMap
-from .forms import CustomLinkForm
 from django.urls import reverse
 from .utilities import *
 
+#Homepage view
+def home(request):
+    # if not request.user.is_authenticated:
+    #     return HttpResponseRedirect('/accounts/login')
+
+    if request.user.is_authenticated:
+        basehtml = 'base.html'
+        if request.method == 'POST':
+            form = DocumentForm(request.POST, request.FILES)
+            if form.is_valid():
+                documentform_unsaved  = form.save(commit=False)
+                documentform_unsaved.uploader = request.user
+                documentform_unsaved.save()
+                response = render(request, 'home/home.html', {'form': form, 'base': 'base.html',})
+                response.set_cookie('message', "uploaded") 
+                return response
+    else:
+        basehtml = 'base-blank.html'
+    form = DocumentForm()        
+    return render(request, 'home/home.html', {'form': form,
+                                              'base': basehtml,})
 
 #Link expander view
 def expand(request, link):
@@ -42,20 +62,18 @@ def expand(request, link):
             return render(request, 'filedetail/access_error.html',{
                           'error':"Shortlink expired",
                 })
-    
-    url.usage_count += 1
-
-    data = {
-            'document':url.document.upload.name,
-            'shortlink':url.short_url,
-            'usage_count':url.usage_count,
-            'max_count':url.max_count,
-    }
 
     if url.webhook is not None:
+        data = {
+                'document':url.document.upload.name,
+                'shortlink':url.short_url,
+                'usage_count':url.usage_count,
+                'max_count':url.max_count
+                }
         response = requests.post(url.webhook, json=data)
         print('Webhook triggered. Returned status code:'+str(response.status_code))
     
+    url.usage_count += 1
     url.save()
     return HttpResponseRedirect(url.full_url)
 
@@ -89,6 +107,7 @@ def filedetail(request):
     request.session['current_doc_name'] = filedetails.document.upload.name  
     return render(request, 'filedetail/filedetail.html',{
                   'selectedfile':filedetails,
+                  'base': 'base.html',
         })
 
 
@@ -119,29 +138,8 @@ def customlink(request):
     return render(request, 'filedetail/customlink.html',{
                   'form':form,
                   'doc_name':request.session['current_doc_name'],
+                  'base': 'base.html',
                   })        
-
-#Homepage view
-def home(request):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect('/accounts/login')
-
-    if request.user.is_authenticated:
-        if request.method == 'POST':
-            form = DocumentForm(request.POST, request.FILES)
-            if form.is_valid():
-                documentform_unsaved  = form.save(commit=False)
-                documentform_unsaved.uploader = request.user
-                documentform_unsaved.save()
-                response = render(request, 'home/home.html', {'form': form,})
-                response.set_cookie('message', "uploaded") 
-                return response
-        else:
-            form = DocumentForm()
-
-        return render(request, 'home/home.html', {
-            'form': form,
-        })
 
 #Filelist view
 @login_required
@@ -160,34 +158,28 @@ def filelist(request):
     return render(request, 'home/filelist.html', {
         'documents':documents,
         'user_email':request.user.email,
+        'base': 'base.html',
     })
 
 #Registration view
-@login_required
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            userObj = form.cleaned_data
-            email =  userObj['email']
-            auth_token = token_generator()
-            while User.objects.filter(username=auth_token).exists():
-                auth_token = token_generator()
-            if not User.objects.filter(email=email).exists():
-                User.objects.create_user(auth_token, email, auth_token)
-                return render(request, 'home/register_success.html',
-                              {'auth_token' : auth_token})
-            else:
-                raise forms.ValidationError('Looks like a user with that email already exists')
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            login(request, user)
+            return redirect('home')
     else:
         form = UserRegistrationForm()
-    return render(request, 'home/register.html', {
-        'form' : form,
-        'user_email':request.user.email,
-    })
+    return render(request, 'registration/register.html', {'form': form,
+                                                          'base': 'base-blank.html',})
+
 
 #LogOut view
 @login_required
 def log_out(request):
     logout(request)
-    return render(request, 'registration/logout.html')
+    return redirect('home')

@@ -25,6 +25,7 @@ PREREQUISITE_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'storages',
+    'social_django',
 ]
 PROJECT_APPS = [
     'apps.urlytic',
@@ -44,6 +45,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 #Main URLs
@@ -68,6 +70,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -101,3 +105,21 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 DEFAULT_FILE_STORAGE = 'settings.storage_backends.MediaStorage'
 
+
+#Authentication Backends
+#------------------------------------------------------------------------------------
+# https://python-social-auth-docs.readthedocs.io/en/latest/configuration/django.html
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.github.GithubOAuth2',
+    'social_core.backends.twitter.TwitterOAuth',
+    'social_core.backends.facebook.FacebookOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+#Social Auth
+#------------------------------------------------------------------------------------
+LOGIN_URL = '/accounts/login/'
+LOGOUT_URL = 'log_out'
+LOGIN_REDIRECT_URL = 'home'
+SOCIAL_AUTH_GITHUB_KEY = 'c940fa229f5ef1dd4357'
+SOCIAL_AUTH_GITHUB_SECRET = 'f9a771d1b2d6bcb8cf1655da37b15400238554d7'
