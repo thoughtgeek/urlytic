@@ -18,7 +18,6 @@ URLytic - FileList
         <th>Name</th>
         <th>Uploaded at</th>
         <th>Size</th>
-        <th>Uploaded by</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -28,7 +27,6 @@ URLytic - FileList
           <td><a href="{% url 'filedetail_home' %}?filename={{ document.upload.name }}" target="_blank">{{ document.upload.name }}</a></td>
           <td>{{ document.uploaded_at }}</td>
           <td>{{ document.upload.size|filesizeformat }}</td>
-          <td>{{ document.uploader.email }}</td>
           <td>
            <button class="delFile btn btn-primary btn-sm" value="{{ document.upload }}">Delete</button></td>
         </tr>
