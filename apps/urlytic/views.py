@@ -145,7 +145,7 @@ def customlink(request):
 @login_required
 @csrf_exempt
 def filelist(request):
-    documents = Document.objects.all()
+    documents = Document.objects.filter(uploader=request.user)
     if request.method == 'DELETE':
         delFile = str(QueryDict(request.body).get('delFile'))
         try:
