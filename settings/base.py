@@ -121,5 +121,11 @@ AUTHENTICATION_BACKENDS = (
 LOGIN_URL = '/accounts/login/'
 LOGOUT_URL = 'log_out'
 LOGIN_REDIRECT_URL = 'home'
-SOCIAL_AUTH_GITHUB_KEY = 'c940fa229f5ef1dd4357'
-SOCIAL_AUTH_GITHUB_SECRET = 'f9a771d1b2d6bcb8cf1655da37b15400238554d7'
+SOCIAL_AUTH_GITHUB_KEY = config('SOCIAL_AUTH_GITHUB_KEY')
+SOCIAL_AUTH_GITHUB_SECRET = config('SOCIAL_AUTH_GITHUB_SECRET')
+
+
+#Project Specific Settings
+#------------------------------------------------------------------------------------
+# WEBHOOK_LINK = '' <- Use this to set up the webhook URL for tests
+# DOMAIN_NAME = '' <- Use this to set up the domain name **REQUIRED**
