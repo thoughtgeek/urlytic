@@ -30,9 +30,19 @@ URLytic - Login
 </div>  
 <button class ="btn btn-primary btn-lg btn-block" type="submit">Login</button>
 </form>
+<div class="d-flex justify-content-center">
 <a href="{% url 'social:begin' 'github' %}">
-<button class ="btn btn-primary btn-lg btn-block"  style=margin-top:2%;>Login with GitHub</button>
-</a><br>
+<button class ="btn btn-outline-secondary"  style=margin-top:5%;>Login with GitHub</button>
+</a>
+<div style=margin-left:2%>
+<a href="{% url 'social:begin' 'google-oauth2' %}">
+<button class ="btn btn-outline-success" style=margin-top:5%>Login with Google</button>
+</a></div>
+<div style=margin-left:2%>
+<a href="{% url 'social:begin' 'facebook' %}">
+<button class ="btn btn-outline-primary" style=margin-top:5%;>Login with Facebook</button>
+</a></div>
+</div>
 </div>
 </div>
 </div>
