@@ -17,9 +17,6 @@ from .utilities import *
 
 #Homepage view
 def home(request):
-    # if not request.user.is_authenticated:
-    #     return HttpResponseRedirect('/accounts/login')
-
     if request.user.is_authenticated:
         basehtml = 'base.html'
         if request.method == 'POST':
@@ -28,8 +25,13 @@ def home(request):
                 documentform_unsaved  = form.save(commit=False)
                 documentform_unsaved.uploader = request.user
                 documentform_unsaved.save()
+                filename = documentform_unsaved
+                filedetails = RenderInfo(filename)
+                default_file_settings = LinkSettings('True', -1, -1)
+                uniqueurl = generate(filedetails.document, default_file_settings, filedetails.document.upload.url)
+                print('Generating new link:'+uniqueurl)
                 response = render(request, 'home/home.html', {'form': form, 'base': 'base.html',})
-                response.set_cookie('message', "uploaded") 
+                response.set_cookie('message', "uploaded")
                 return response
     else:
         basehtml = 'base-blank.html'

@@ -25,13 +25,12 @@ URLytic - Home
     </form>
   {% else %}
     <form method="get" action="/accounts/login">
-    {% csrf_token %}
     <div class="d-flex justify-content-center">
     <h2>Upload your file</h2>
     </div>
     <br>
     <div class="list-group list-group-item list-group-item-action list-group-item-primary d-flex justify-content-center">
-    {{ form }}
+    <input type="file" name="upload" id="id_upload" required />
     </div>
     <br>
     <div class="d-flex justify-content-center">
@@ -61,12 +60,18 @@ URLytic - Home
         dialogClass: "no-close",
         buttons: [
           {
-            text: "OK",
+            text: "Ok, close",
             click: function() {
               $( this ).dialog( "close" );
             }
-          }
-        ]
+           },
+           { 
+            text: "Go to filelist",
+            click: function() {
+              $( this ).dialog( "close" );
+              window.location = '/filelist';
+            }
+           }] 
       });
     Cookies.remove('message')});    
 </script>
